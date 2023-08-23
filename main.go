@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/RafaZeero/go-pays.git/router"
+	"github.com/RafaZeero/go-pays/router"
 )
 
 func main() {
