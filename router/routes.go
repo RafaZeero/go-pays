@@ -14,6 +14,8 @@ func InitializeRoutes(r *gin.Engine) {
 		v1.GET("/accounts", GetAccounts)
 		v1.GET("/accounts/:id", GetAccountByID)
 		v1.POST("/accounts", CreateAccount)
+		v1.PUT("/accounts", UpdateAccount)
+		v1.DELETE("/accounts", DeleteAccount)
 	}
 }
 
@@ -51,4 +53,12 @@ func GetAccountByID(ctx *gin.Context) {
 	}
 	// Response
 	ctx.JSON(http.StatusNotFound, gin.H{"message": "Account not found"})
+}
+
+func UpdateAccount(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"message": "UPDATE account"})
+}
+
+func DeleteAccount(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"message": "DELETE account"})
 }
