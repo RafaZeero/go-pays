@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/RafaZeero/go-pays/config"
@@ -8,32 +9,47 @@ import (
 )
 
 type User struct {
+	ID      string `json:"id"`
 	Name    string `json:"name"`
 	Balance string `json:"balance"`
 }
 
+// #region insert
+// func insert(db *sql.DB) {
+// 	// Init transaction
+// 	tx, _ := db.Begin()
+// 	// Statement
+// 	stmt, _ := tx.Prepare("insert into accounts (name, balance) values (?,?)")
+// 	stmt.Exec("RafaZeero3", 1456)
+// 	stmt.Exec("Luffy3", 2789)
+// 	_, err := stmt.Exec("goku2", 34770)
+// 	// Rollback if an error occur
+// 	if err != nil {
+// 		tx.Rollback()
+// 		log.Fatal(err)
+// 	}
+// 	// Commit transaction
+// 	tx.Commit()
+// }
+// #endregion insert
+
+// #region select
+func selectFromDB(db *sql.DB) {
+	rows, _ := db.Query("select id, name, balance from accounts where id > ?", 2004)
+	defer rows.Close()
+	for rows.Next() {
+		var u User
+		rows.Scan(&u.ID, &u.Name, &u.Balance)
+		fmt.Println(u)
+	}
+}
+
+// #endregion select
+
 func main() {
 	db := config.DbConn()
-
 	defer db.Close()
-	// router.Initialize()
-	res, err := db.Query("SELECT * FROM account")
+	// insert(db)
 
-	if err != nil {
-		panic(err.Error())
-	}
-
-	for res.Next() {
-		var user User
-
-		err := res.Scan(&user.Name, &user.Balance)
-
-		if err != nil {
-			panic(err.Error())
-		}
-
-		fmt.Println(user)
-	}
-
-	defer res.Close()
+	selectFromDB(db)
 }
