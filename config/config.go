@@ -13,27 +13,23 @@ var (
 )
 
 func Init() error {
+	var err error
+
+	//Initialize DB
+	db, err = InitDB()
+
+	if err != nil {
+		return fmt.Errorf("Error init DB: %v", err)
+	}
+
 	return nil
+}
+
+func GetDB() *sql.DB {
+	return db
 }
 
 func GetLogger(p string) *Logger {
 	logger = NewLogger(p)
 	return logger
-}
-
-func dbConn() (db *sql.DB) {
-	dbDriver := "mysql"
-	dbUser := "root"
-	dbPass := "password"
-	dbName := "go_pays_db"
-
-	// Create the data source name (DSN)
-	dsn := fmt.Sprintf("%s:%s@tcp(localhost:3306)/%s", dbUser, dbPass, dbName)
-
-	// Open a database connection
-	db, err := sql.Open(dbDriver, dsn)
-	if err != nil {
-		panic(err.Error())
-	}
-	return db
 }
