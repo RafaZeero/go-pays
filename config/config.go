@@ -7,11 +7,26 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func DbConn() (db *sql.DB) {
+var (
+	db     *sql.DB
+	logger *Logger
+)
+
+func Init() error {
+	return nil
+}
+
+func GetLogger(p string) *Logger {
+	logger = NewLogger(p)
+	return logger
+}
+
+func dbConn() (db *sql.DB) {
 	dbDriver := "mysql"
 	dbUser := "root"
 	dbPass := "password"
 	dbName := "go_pays_db"
+
 	// Create the data source name (DSN)
 	dsn := fmt.Sprintf("%s:%s@tcp(localhost:3306)/%s", dbUser, dbPass, dbName)
 
