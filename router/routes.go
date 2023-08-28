@@ -5,7 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitializeRoutes(r *gin.Engine) {
+func InitRoutes(r *gin.Engine) {
+	// Initialize Handler
+	handler.InitHandler()
+
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/accounts", handler.GetAccounts)
