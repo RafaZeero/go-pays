@@ -1,1 +1,14 @@
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Tests
+*.test
+
+# Coverage
+
+*.out
+
+# Envs
 .env
