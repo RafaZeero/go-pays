@@ -3,18 +3,27 @@ package config
 import (
 	"database/sql"
 	"fmt"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // Create DB and Connect
 func InitDB() (*sql.DB, error) {
 	logger := GetLogger("DB")
-
+	// Load environment variables from the .env file
+	err := godotenv.Load(".env")
+	if err != nil {
+		logger.Error("Error loading .env file")
+	}
 	// DB Config
 	dbDriver := "mysql"
-	dbUser := "root"
-	dbPass := "password"
-	dbName := "go_pays_db"
-	dbAdress := "tcp(localhost:3306)"
+	dbUser := os.Getenv("DB_USER")
+	dbPass := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbAdress := os.Getenv("DB_ADDRESS")
+
+	fmt.Println("ENVs: ", dbDriver, dbUser, dbPass, dbName, dbAdress)
 
 	// Create the data source name (DSN)
 	dsn := fmt.Sprintf("%s:%s@%s/%s", dbUser, dbPass, dbAdress, dbName)
