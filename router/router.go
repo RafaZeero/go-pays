@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Init() {
+func InitRouter() {
 	// Define port
 	port := os.Getenv("PORT")
 	if port == "" {
