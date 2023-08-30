@@ -1,17 +1,32 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-
 	"github.com/RafaZeero/go-pays/config"
-	// "github.com/RafaZeero/go-pays/router"
+	"github.com/RafaZeero/go-pays/router"
 )
 
-type User struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Balance string `json:"balance"`
+var (
+	logger *config.Logger
+)
+
+func main() {
+	logger = config.GetLogger("main")
+
+	// Initialize Configs
+	err := config.Init()
+
+	if err != nil {
+		logger.Errorf("Config init error: %v", err.Error())
+		return
+	}
+
+	// Initialize Router
+	router.Init()
+
+	// db := config.DbConn()
+	// defer db.Close()
+	// selectFromDB(db)
+	// insert(db)
 }
 
 // #region insert
@@ -34,22 +49,14 @@ type User struct {
 // #endregion insert
 
 // #region select
-func selectFromDB(db *sql.DB) {
-	rows, _ := db.Query("select id, name, balance from accounts where id > ?", 2004)
-	defer rows.Close()
-	for rows.Next() {
-		var u User
-		rows.Scan(&u.ID, &u.Name, &u.Balance)
-		fmt.Println(u)
-	}
-}
+// func selectFromDB(db *sql.DB) {
+// 	rows, _ := db.Query("select id, name, balance from accounts where id > ?", 2004)
+// 	defer rows.Close()
+// 	for rows.Next() {
+// 		var u User
+// 		rows.Scan(&u.ID, &u.Name, &u.Balance)
+// 		fmt.Println(u)
+// 	}
+// }
 
 // #endregion select
-
-func main() {
-	db := config.DbConn()
-	defer db.Close()
-	// insert(db)
-
-	selectFromDB(db)
-}

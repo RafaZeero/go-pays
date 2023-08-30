@@ -9,6 +9,7 @@ import (
 )
 
 func CreateAccount(ctx *gin.Context) {
+	// New account
 	na := Account{
 		ID:        strconv.Itoa(len(Accounts) + 1),
 		CreatedAt: time.Now(),
