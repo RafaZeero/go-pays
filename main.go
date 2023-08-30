@@ -21,12 +21,7 @@ func main() {
 	}
 
 	// Initialize Router
-	router.Init()
-
-	// db := config.DbConn()
-	// defer db.Close()
-	// selectFromDB(db)
-	// insert(db)
+	router.InitRouter()
 }
 
 // #region insert
