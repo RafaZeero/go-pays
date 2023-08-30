@@ -2,26 +2,37 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
-	"time"
 
+	"github.com/RafaZeero/go-pays/schemas"
 	"github.com/gin-gonic/gin"
 )
 
 func CreateAccount(ctx *gin.Context) {
 	// New account
-	na := Account{
-		ID:        strconv.Itoa(len(Accounts) + 1),
-		CreatedAt: time.Now(),
-	}
+	var na schemas.Account
+
+	tx, _ := db.Begin()
 
 	if err := ctx.ShouldBindJSON(&na); err != nil {
 		return
 	}
 
+	query := "INSERT INTO accounts (name, balance, createdAt, updatedAt ) VALUES (?, ?, NOW(), NOW())"
+
+	stmt, _ := tx.Prepare(query)
+
 	// Add new account to list
-	Accounts = append(Accounts, na)
+	_, err := stmt.Exec(na.Name, na.Balance)
+
+	// Rollback if error
+	if err != nil {
+		logger.Errorf("Error creating new account: %s", err.Error())
+		tx.Rollback()
+		return
+	}
+
+	tx.Commit()
 
 	// Response
-	ctx.JSON(http.StatusCreated, na)
+	ctx.JSON(http.StatusCreated, gin.H{"response": "Account created successfully."})
 }
