@@ -16,7 +16,25 @@ func GetAccounts(ctx *gin.Context) {
 
 	for rows.Next() {
 		var u schemas.Account
-		rows.Scan(&u.ID, &u.Name, &u.Balance, &u.CreatedAt, &u.UpdatedAt)
+		var createdAtDB, updatedAtDB []uint8
+		err := rows.Scan(&u.ID, &u.Name, &u.Balance, &createdAtDB, &updatedAtDB)
+		if err != nil {
+			logger.Errorf("Error while fetching accounts: %s", err.Error())
+			return
+		}
+		u.CreatedAt, err = ParseDBDate(createdAtDB)
+		if err != nil {
+			// Handle the error
+			logger.Errorf("Error handling createdAt: %s", err.Error())
+			continue
+		}
+
+		u.UpdatedAt, err = ParseDBDate(updatedAtDB)
+		if err != nil {
+			// Handle the error
+			logger.Errorf("Error handling updatedAt: %s", err.Error())
+			continue
+		}
 		us = append(us, u)
 	}
 	// Response: Get accounts variable
