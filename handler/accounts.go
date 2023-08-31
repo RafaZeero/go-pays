@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/RafaZeero/go-pays/schemas"
 	"github.com/gin-gonic/gin"
@@ -21,11 +22,8 @@ func CreateAccount(ctx *gin.Context) {
 
 	stmt, _ := tx.Prepare(query)
 
-	// Add new account to list
-	_, err := stmt.Exec(na.Name, na.Balance)
-
 	// Rollback if error
-	if err != nil {
+	if _, err := stmt.Exec(na.Name, na.Balance); err != nil {
 		logger.Errorf("Error creating new account: %s", err.Error())
 		tx.Rollback()
 		return
@@ -92,4 +90,96 @@ func UpdateAccount(ctx *gin.Context) {
 
 func DeleteAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "DELETE account"})
+}
+
+func MakeTransaction(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+
+	if err != nil {
+		logger.Error("Failed to get param 'id'")
+		return
+	}
+	// Create transaction
+	var t TransactionRequest
+	t.ID = id
+	if err := ctx.ShouldBindJSON(&t); err != nil {
+		return
+	}
+
+	if err := t.Validate(); err != nil {
+		logger.Errorf("Error request for transaction: %s", err.Error())
+		return
+	}
+
+	// Begin Transaction
+	tx, _ := db.Begin()
+
+	queries := struct {
+		getBalance    string
+		updateBalance string
+	}{
+		getBalance:    "SELECT id, name, balance FROM accounts WHERE id = ?",
+		updateBalance: "UPDATE accounts SET balance = ? WHERE id = ?",
+	}
+
+	// First statement
+	stmt1, _ := tx.Prepare(queries.getBalance)
+
+	row, err := stmt1.Query(t.ID)
+
+	if err != nil {
+		logger.Errorf("Error getting account balance: %s", err.Error())
+		tx.Rollback()
+		return
+	}
+
+	var u schemas.User
+
+	for row.Next() {
+		err := row.Scan(&u.ID, &u.Name, &u.Balance)
+		if err != nil {
+			logger.Errorf("Error while fetching account: %s", err.Error())
+			tx.Rollback()
+			return
+		}
+	}
+
+	// Transaction process
+	var newBalance float64
+	if t.TransactionType == "deposit" {
+		newBalance = u.Balance + t.Amount
+	} else if t.TransactionType == "withdrawl" {
+		// TODO: validate newBalance < 0
+		newBalance = u.Balance - t.Amount
+	}
+
+	// Second statement
+	stmt2, _ := tx.Prepare(queries.updateBalance)
+
+	if _, err := stmt2.Exec(newBalance, t.ID); err != nil {
+		logger.Errorf("Error getting account balance: %s", err.Error())
+		tx.Rollback()
+		return
+	}
+
+	// TODO: new statement in a new table to create history of transactions
+
+	tx.Commit()
+
+	// Create the response using gin.H
+	response := gin.H{
+		"success": true,
+		"message": "Deposit successful",
+		"data": gin.H{
+			"account_id":  t.ID,
+			"amount":      t.Amount,
+			"new_balance": newBalance,
+		},
+	}
+
+	ctx.JSON(http.StatusOK, response)
+}
+
+func MakeWithdrawal(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"response": "Account created successfully."})
 }
