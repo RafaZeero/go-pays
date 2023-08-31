@@ -11,10 +11,15 @@ func InitRoutes(r *gin.Engine) {
 
 	v1 := r.Group("/api/v1")
 	{
-		v1.GET("/accounts", handler.GetAccounts)
-		v1.GET("/accounts/:id", handler.GetAccountByID)
-		v1.POST("/accounts", handler.CreateAccount)
-		v1.PUT("/accounts", handler.UpdateAccount)
-		v1.DELETE("/accounts", handler.DeleteAccount)
+		InitAccountRoutes(v1)
 	}
+}
+
+func InitAccountRoutes(r *gin.RouterGroup) {
+	r.GET("/accounts", handler.GetAccounts)
+	r.GET("/accounts/:id", handler.GetAccountByID)
+	r.POST("/accounts", handler.CreateAccount)
+	r.POST("/accounts/:id/transaction", handler.MakeTransaction)
+	r.PUT("/accounts", handler.UpdateAccount)
+	r.DELETE("/accounts", handler.DeleteAccount)
 }
