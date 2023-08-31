@@ -1,6 +1,9 @@
 package schemas
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Account struct {
 	User
@@ -12,4 +15,12 @@ type User struct {
 	ID      int64   `json:"id"`
 	Name    string  `json:"name"`
 	Balance float64 `json:"balance"`
+}
+
+// v=Value, t=Type
+func (u *User) Validate() error {
+	if u.ID <= 0 || u.Name == "" {
+		return fmt.Errorf("user not found")
+	}
+	return nil
 }
