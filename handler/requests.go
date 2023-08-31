@@ -1,6 +1,8 @@
 package handler
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func errTransaction(a, t string) error {
 	return fmt.Errorf("value %s (type: %s) is required", a, t)

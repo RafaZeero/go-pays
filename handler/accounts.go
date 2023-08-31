@@ -94,26 +94,32 @@ func DeleteAccount(ctx *gin.Context) {
 
 func MakeTransaction(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
-
+	// Validate Param
 	if err != nil {
 		logger.Error("Failed to get param 'id'")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// Create transaction
 	var t TransactionRequest
 	t.ID = id
+	// Validate JSON format
 	if err := ctx.ShouldBindJSON(&t); err != nil {
+		logger.Errorf("Invalid format for transaction: %s", err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	// Validate amount for 2 decimals only
+	t.Amount = Truncate(t.Amount, 0.01)
+	// Validate JSON data
 	if err := t.Validate(); err != nil {
 		logger.Errorf("Error request for transaction: %s", err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	// Begin Transaction
 	tx, _ := db.Begin()
-
+	// Create queries
 	queries := struct {
 		getBalance    string
 		updateBalance string
@@ -121,29 +127,36 @@ func MakeTransaction(ctx *gin.Context) {
 		getBalance:    "SELECT id, name, balance FROM accounts WHERE id = ?",
 		updateBalance: "UPDATE accounts SET balance = ? WHERE id = ?",
 	}
-
 	// First statement
 	stmt1, _ := tx.Prepare(queries.getBalance)
-
+	// Query to get account
 	row, err := stmt1.Query(t.ID)
-
+	// Validate query
 	if err != nil {
 		logger.Errorf("Error getting account balance: %s", err.Error())
 		tx.Rollback()
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	// Create user
 	var u schemas.User
-
+	// Assign values from DB
 	for row.Next() {
 		err := row.Scan(&u.ID, &u.Name, &u.Balance)
 		if err != nil {
 			logger.Errorf("Error while fetching account: %s", err.Error())
 			tx.Rollback()
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	}
-
+	// Validate User
+	if err := u.Validate(); err != nil {
+		logger.Errorf("Error while fetching account: %s", err.Error())
+		tx.Rollback()
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	// Transaction process
 	var newBalance float64
 	if t.TransactionType == "deposit" {
@@ -152,20 +165,17 @@ func MakeTransaction(ctx *gin.Context) {
 		// TODO: validate newBalance < 0
 		newBalance = u.Balance - t.Amount
 	}
-
 	// Second statement
 	stmt2, _ := tx.Prepare(queries.updateBalance)
-
+	// Validate update new balance
 	if _, err := stmt2.Exec(newBalance, t.ID); err != nil {
 		logger.Errorf("Error getting account balance: %s", err.Error())
 		tx.Rollback()
 		return
 	}
-
 	// TODO: new statement in a new table to create history of transactions
-
+	// Commit changes
 	tx.Commit()
-
 	// Create the response using gin.H
 	response := gin.H{
 		"success": true,
@@ -176,7 +186,7 @@ func MakeTransaction(ctx *gin.Context) {
 			"new_balance": newBalance,
 		},
 	}
-
+	// Sucess 🥳
 	ctx.JSON(http.StatusOK, response)
 }
 
