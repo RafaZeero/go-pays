@@ -21,5 +21,5 @@ func InitAccountRoutes(r *gin.RouterGroup) {
 	r.POST("/accounts", handler.CreateAccount)
 	r.POST("/accounts/:id/transaction", handler.MakeTransaction)
 	r.PATCH("/accounts/:id", handler.UpdateAccount)
-	r.DELETE("/accounts", handler.DeleteAccount)
+	r.DELETE("/accounts/:id", handler.DeleteAccount)
 }
