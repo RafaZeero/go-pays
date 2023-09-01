@@ -114,7 +114,7 @@ func GetAccountByID(ctx *gin.Context) {
 	// Create response
 	response := gin.H{
 		"success": true,
-		"message": "Account found successfully",
+		"message": "Account found",
 		"data": gin.H{
 			"account": a,
 		},
@@ -124,7 +124,41 @@ func GetAccountByID(ctx *gin.Context) {
 }
 
 func UpdateAccount(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"message": "UPDATE account"})
+	// Get Param
+	id := ctx.Param("id")
+	// Create Account
+	var a schemas.Account
+	// Validate JSON format
+	if err := ctx.ShouldBindJSON(&a); err != nil {
+		logger.Errorf("Invalid format for transaction: %s", err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// Begin Transaction
+	tx, _ := db.Begin()
+	// Make query
+	query := "UPDATE accounts SET name = ?, updatedAt = NOW() WHERE id = ?"
+	// Create statement
+	stmt, _ := tx.Prepare(query)
+	// Query to update acc
+	if _, err := stmt.Exec(a.Name, id); err != nil {
+		logger.Errorf("Error updating account: %s", err.Error())
+		tx.Rollback()
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// Commit changes
+	tx.Commit()
+	// Create response
+	response := gin.H{
+		"success": true,
+		"message": "Account updated",
+		"data": gin.H{
+			"account_name": a.Name,
+		},
+	}
+	// Sucess 🥳
+	ctx.JSON(http.StatusOK, response)
 }
 
 func DeleteAccount(ctx *gin.Context) {
