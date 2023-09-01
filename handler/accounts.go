@@ -61,19 +61,20 @@ func GetAccounts(ctx *gin.Context) {
 		err := rows.Scan(&u.ID, &u.Name, &u.Balance, &createdAtDB, &updatedAtDB)
 		if err != nil {
 			logger.Errorf("Error while fetching accounts: %s", err.Error())
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		u.CreatedAt, err = ParseDBDate(createdAtDB)
 		if err != nil {
-			// Handle the error
 			logger.Errorf("Error handling createdAt: %s", err.Error())
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			continue
 		}
 
 		u.UpdatedAt, err = ParseDBDate(updatedAtDB)
 		if err != nil {
-			// Handle the error
 			logger.Errorf("Error handling updatedAt: %s", err.Error())
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			continue
 		}
 		us = append(us, u)
@@ -108,11 +109,13 @@ func GetAccountByID(ctx *gin.Context) {
 		a.CreatedAt, err = ParseDBDate(createdAtDB)
 		if err != nil {
 			logger.Errorf("Error handling createdAt: %s", err.Error())
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			continue
 		}
 		a.UpdatedAt, err = ParseDBDate(updatedAtDB)
 		if err != nil {
 			logger.Errorf("Error handling updatedAt: %s", err.Error())
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			continue
 		}
 	}
