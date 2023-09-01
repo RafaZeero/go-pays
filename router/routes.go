@@ -20,6 +20,6 @@ func InitAccountRoutes(r *gin.RouterGroup) {
 	r.GET("/accounts/:id", handler.GetAccountByID)
 	r.POST("/accounts", handler.CreateAccount)
 	r.POST("/accounts/:id/transaction", handler.MakeTransaction)
-	r.PUT("/accounts", handler.UpdateAccount)
+	r.PATCH("/accounts/:id", handler.UpdateAccount)
 	r.DELETE("/accounts", handler.DeleteAccount)
 }
