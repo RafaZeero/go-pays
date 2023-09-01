@@ -22,11 +22,11 @@
 
 ## PATCH
 
-`UpdateAccount` [/accounts](#patch-accounts)<br/>
+`UpdateAccount` [/accounts](#patch-accountsid)<br/>
 
 ## DELETE
 
-`DeleteAccount` [/accounts](#delete-accounts)<br/>
+`DeleteAccount` [/accounts](#delete-accountsid)<br/>
 
 ---
 
@@ -50,7 +50,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
   {
 		"id": 2,
 		"name": "Rayssa",
-		"balance": 500,
+		"balance": 5000.23,
 		"createdAt": "2023-09-01T14:20:23Z",
 		"updatedAt": "2023-09-01T14:20:23Z"
 	}
@@ -75,7 +75,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 	"data": {
 		"account": {
 			"id": 9,
-			"name": "Nami",
+			"name": "Riquinho muito rico",
 			"balance": 8000000,
 			"createdAt": "2023-08-31T13:26:02Z",
 			"updatedAt": "2023-09-01T13:39:57Z"
@@ -129,4 +129,78 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 
 **Parameters**
 
+| Name               | Required | Type                              | Description                                                                                                                                                                |
+| ------------------ | -------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `amount`           | required | number (float64)                  | The amount of money to be deposit or withdrawl in the transaction                                                                                                          |
+| `transaction_type` | required | string ("deposit" or "withdrawl") | Type of transaction, if it is a `deposit`, the amount will be added to the current balance, if it is a `withdrawl`, the amount will be subtracted from the current balance |
+
 **Response**
+
+```
+// On success:
+{
+	"data": {
+		"account_id": 1,
+		"amount": 196.01,
+		"new_balance": 9039.86
+	},
+	"message": "Transaction successful",
+	"success": true
+}
+// On error:
+{
+  "error": (error message)
+}
+```
+
+### PATCH /accounts/:id
+
+Update account owner's name. <br/>
+See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e942796d247474438a3d9c118a36d2af0c/handler/accounts.go#L137).
+
+**Parameters**
+
+| Name   | Required | Type   | Description               |
+| ------ | -------- | ------ | ------------------------- |
+| `name` | required | string | Name of the account owner |
+
+**Response**
+
+```
+// On success:
+{
+	"data": {
+		"account_name": "Nami"
+	},
+	"message": "Account updated",
+	"success": true
+}
+// On error:
+{
+  "error": (error message)
+}
+```
+
+### DELETE /accounts/:id
+
+Delete account. <br/>
+See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e942796d247474438a3d9c118a36d2af0c/handler/accounts.go#L175).
+
+**Response**
+
+```
+// On success:
+{
+	"message": "Account deleted",
+	"success": true
+}
+// On error:
+// * User not found or not exists
+{
+	"error": "User not found or does not exists"
+}
+// * Other
+{
+  "error": (error message)
+}
+```
