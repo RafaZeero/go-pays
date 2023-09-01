@@ -2,6 +2,7 @@ package config
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -17,17 +18,19 @@ func InitDB() (*sql.DB, error) {
 	}
 	// DB Config
 	dbDriver := "mysql"
-	// * For Development
-	// dbUser := os.Getenv("DB_USER")
-	// dbPass := os.Getenv("DB_PASSWORD")
-	// dbName := os.Getenv("DB_NAME")
-	// dbAdress := os.Getenv("DB_ADDRESS")
-
-	// Create the data source name (DSN)
-	// dsn := fmt.Sprintf("%s:%s@%s/%s", dbUser, dbPass, dbAdress, dbName)
-
 	// * For Production
 	dsn := os.Getenv("DSN")
+
+	if dsn == "" {
+		// * For Development
+		dbUser := os.Getenv("DB_USER")
+		dbPass := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbAdress := os.Getenv("DB_ADDRESS")
+
+		// Create the data source name (DSN)
+		dsn = fmt.Sprintf("%s:%s@%s/%s", dbUser, dbPass, dbAdress, dbName)
+	}
 
 	// Open a database connection
 	db, err := sql.Open(dbDriver, dsn)
