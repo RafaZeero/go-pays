@@ -14,7 +14,7 @@ func CreateAccount(ctx *gin.Context) {
 
 	tx, _ := db.Begin()
 
-	if err := ctx.ShouldBindJSON(&na); err != nil {
+	if err := ctx.BindJSON(&na); err != nil {
 		return
 	}
 
@@ -70,18 +70,57 @@ func GetAccounts(ctx *gin.Context) {
 }
 
 func GetAccountByID(ctx *gin.Context) {
+	// Get Param
 	id := ctx.Param("id")
-
-	// Looks for account with ID equals the params
-	// for _, a := range Accounts {
-	// 	if a.ID == id {
-	// 		ctx.JSON(http.StatusOK, a)
-	// 		return
-	// 	}
-	// }
-
-	logger.Infof("The id is %s", id)
-	ctx.JSON(http.StatusNotFound, gin.H{"message": "Account not found"})
+	// Make query
+	query := "SELECT id, name, balance, createdAt, updatedAt FROM accounts WHERE id = ?"
+	row, err := db.Query(query, id)
+	// Validate query
+	if err != nil {
+		logger.Errorf("Error getting account: %s", err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// Create Account
+	var a schemas.Account
+	var createdAtDB, updatedAtDB []uint8
+	// Assign values from DB
+	for row.Next() {
+		err := row.Scan(&a.ID, &a.Name, &a.Balance, &createdAtDB, &updatedAtDB)
+		if err != nil {
+			logger.Errorf("Error: %s", err.Error())
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		a.CreatedAt, err = ParseDBDate(createdAtDB)
+		if err != nil {
+			// Handle the error
+			logger.Errorf("Error handling createdAt: %s", err.Error())
+			continue
+		}
+		a.UpdatedAt, err = ParseDBDate(updatedAtDB)
+		if err != nil {
+			// Handle the error
+			logger.Errorf("Error handling updatedAt: %s", err.Error())
+			continue
+		}
+	}
+	// Validate User
+	if err := a.Validate(); err != nil {
+		logger.Errorf("Error while fetching account: %s", err.Error())
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	// Create response
+	response := gin.H{
+		"success": true,
+		"message": "Account found successfully",
+		"data": gin.H{
+			"account": a,
+		},
+	}
+	// Sucess 🥳
+	ctx.JSON(http.StatusNotFound, response)
 }
 
 func UpdateAccount(ctx *gin.Context) {
@@ -121,19 +160,19 @@ func MakeTransaction(ctx *gin.Context) {
 	tx, _ := db.Begin()
 	// Create queries
 	queries := struct {
-		getBalance    string
+		getAccount    string
 		updateBalance string
 	}{
-		getBalance:    "SELECT id, name, balance FROM accounts WHERE id = ?",
+		getAccount:    "SELECT id, name, balance FROM accounts WHERE id = ?",
 		updateBalance: "UPDATE accounts SET balance = ? WHERE id = ?",
 	}
 	// First statement
-	stmt1, _ := tx.Prepare(queries.getBalance)
+	stmt1, _ := tx.Prepare(queries.getAccount)
 	// Query to get account
 	row, err := stmt1.Query(t.ID)
 	// Validate query
 	if err != nil {
-		logger.Errorf("Error getting account balance: %s", err.Error())
+		logger.Errorf("Error getting account: %s", err.Error())
 		tx.Rollback()
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -179,7 +218,7 @@ func MakeTransaction(ctx *gin.Context) {
 	// Create the response using gin.H
 	response := gin.H{
 		"success": true,
-		"message": "Deposit successful",
+		"message": "Transaction successful",
 		"data": gin.H{
 			"account_id":  t.ID,
 			"amount":      t.Amount,
