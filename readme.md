@@ -2,6 +2,26 @@
 
 "Go pays" is a rest API made with Go using GIN that allows users to create accounts and make transactions for your account.
 
+## How to run
+
+You can run with:
+
+```bash
+go run main.go
+```
+
+If you wish to run locally, you may need to add values to your local environment variables (.env), such as these in the .env.example:
+
+```
+PORT=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+DB_ADDRESS=
+```
+
+And also you will need a local mySQL db running. You can use the main.sql file in `/db/main.sql` to create your go_pays_db !!
+
 ## Technologies
 
 ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
