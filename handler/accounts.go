@@ -23,7 +23,8 @@ func CreateAccount(ctx *gin.Context) {
 	stmt, _ := tx.Prepare(query)
 
 	// Rollback if error
-	if _, err := stmt.Exec(na.Name, na.Balance); err != nil {
+	row, err := stmt.Exec(na.Name, na.Balance)
+	if err != nil {
 		logger.Errorf("Error creating new account: %s", err.Error())
 		tx.Rollback()
 		return
@@ -31,8 +32,20 @@ func CreateAccount(ctx *gin.Context) {
 
 	tx.Commit()
 
+	id, _ := row.LastInsertId()
+
+	response := gin.H{
+		"success": true,
+		"message": "Account created",
+		"data": gin.H{
+			"id":      id,
+			"name":    na.Name,
+			"balance": na.Balance,
+		},
+	}
+
 	// Response
-	ctx.JSON(http.StatusCreated, gin.H{"response": "Account created successfully."})
+	ctx.JSON(http.StatusCreated, response)
 }
 
 func GetAccounts(ctx *gin.Context) {
@@ -94,13 +107,11 @@ func GetAccountByID(ctx *gin.Context) {
 		}
 		a.CreatedAt, err = ParseDBDate(createdAtDB)
 		if err != nil {
-			// Handle the error
 			logger.Errorf("Error handling createdAt: %s", err.Error())
 			continue
 		}
 		a.UpdatedAt, err = ParseDBDate(updatedAtDB)
 		if err != nil {
-			// Handle the error
 			logger.Errorf("Error handling updatedAt: %s", err.Error())
 			continue
 		}
@@ -162,7 +173,52 @@ func UpdateAccount(ctx *gin.Context) {
 }
 
 func DeleteAccount(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"message": "DELETE account"})
+	id := ctx.Param("id")
+
+	row, err := db.Query("SELECT id FROM accounts WHERE id = ?", id)
+	if err != nil {
+		logger.Errorf("Error fetching data from DB: %s", err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var u schemas.User
+
+	for row.Next() {
+		err := row.Scan(&u.ID)
+		if err != nil {
+			logger.Errorf("Error: %s", err.Error())
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	if err := u.Validate(); err != nil {
+		logger.Errorf("Error: %s", err.Error())
+		ctx.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx, _ := db.Begin()
+	stmt, err := tx.Prepare("DELETE FROM accounts WHERE id = ?")
+	if err != nil {
+		logger.Errorf("Error deleting account: %s", err.Error())
+		tx.Rollback()
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if _, err := stmt.Exec(id); err != nil {
+		logger.Errorf("Error deleting account: %s", err.Error())
+		tx.Rollback()
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tx.Commit()
+	response := gin.H{
+		"success":    true,
+		"message":    "Account deleted",
+		"account_id": id,
+	}
+	ctx.JSON(http.StatusOK, response)
 }
 
 func MakeTransaction(ctx *gin.Context) {
