@@ -37,7 +37,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 
 **Response**
 
-```
+```json
 // On success fetching accounts:
 [
 	{
@@ -58,7 +58,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 
 // On error:
 {
-  "error" : (error message)
+  "error" : "(**error message**)"
 }
 ```
 
@@ -69,7 +69,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 
 **Response**
 
-```
+```json
 // On success:
 {
 	"data": {
@@ -92,7 +92,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 }
 // * Others
 {
-  "error" : (error message)
+  "error" : "(**error message**)"
 }
 ```
 
@@ -110,7 +110,8 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 
 **Response**
 
-```
+```json
+// On success:
 {
 	"data": {
 		"balance": 991299349956.78,
@@ -119,6 +120,10 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 	},
 	"message": "Account created",
 	"success": true
+}
+// On error:
+{
+  "error": "(**error message**)"
 }
 ```
 
@@ -136,7 +141,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 
 **Response**
 
-```
+```json
 // On success:
 {
 	"data": {
@@ -149,7 +154,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 }
 // On error:
 {
-  "error": (error message)
+  "error": "(**error message**)"
 }
 ```
 
@@ -166,7 +171,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 
 **Response**
 
-```
+```json
 // On success:
 {
 	"data": {
@@ -177,7 +182,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 }
 // On error:
 {
-  "error": (error message)
+  "error": "(**error message**)"
 }
 ```
 
@@ -188,7 +193,7 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 
 **Response**
 
-```
+```json
 // On success:
 {
 	"message": "Account deleted",
@@ -201,6 +206,6 @@ See implementation [here](https://github.com/RafaZeero/go-pays/blob/5d6465e94279
 }
 // * Other
 {
-  "error": (error message)
+  "error": "(**error message**)"
 }
 ```
