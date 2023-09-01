@@ -12,21 +12,21 @@
 
 ## GET
 
-`GetAccounts` [/accounts](#get-/accounts) <br/>
-`GetAccountsByID` [/accounts/:id](#get=/accounts/:id) <br/>
+`GetAccounts` [/accounts](#get-accounts) <br/>
+`GetAccountsByID` [/accounts/:id](#get-accountsid) <br/>
 
 ## POST
 
-`CreateAccount` [/accounts](#post-/accounts) <br/>
-`MakeTransaction` [/accounts/:id/transaction](#post-/accounts/:id/transaction)<br/>
+`CreateAccount` [/accounts](#post-accounts) <br/>
+`MakeTransaction` [/accounts/:id/transaction](#post-accountsidtransaction)<br/>
 
 ## PATCH
 
-`UpdateAccount` [/accounts](#patch-/accounts)<br/>
+`UpdateAccount` [/accounts](#patch-accounts)<br/>
 
 ## DELETE
 
-`DeleteAccount` [/accounts](#delete-/accounts)<br/>
+`DeleteAccount` [/accounts](#delete-accounts)<br/>
 
 ---
 
