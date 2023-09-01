@@ -19,7 +19,7 @@ type User struct {
 
 func (u *User) Validate() error {
 	if u.ID <= 0 || u.Name == "" {
-		return fmt.Errorf("user not found")
+		return fmt.Errorf("User not found or does not exists")
 	}
 	return nil
 }
