@@ -189,7 +189,3 @@ func MakeTransaction(ctx *gin.Context) {
 	// Sucess 🥳
 	ctx.JSON(http.StatusOK, response)
 }
-
-func MakeWithdrawal(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"response": "Account created successfully."})
-}
